@@ -1,0 +1,126 @@
+openapi: 3.0.3
+info:
+  title: Malina Server API
+  version: 1.0.0
+  description: API specification for Malina server
+
+servers:
+  - url: http://localhost:3000
+    description: Development server
+
+paths:
+  /reports:
+    post:
+      summary: Пожаловаться на пользователя/контент
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - targetUserId
+                - reason
+              properties:
+                targetUserId:
+                  type: string
+                  format: uuid
+                reason:
+                  type: string
+                details:
+                  type: string
+      responses:
+        "201":
+          description: Создано
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  schemas:
+    AuthTokens:
+      type: object
+      properties:
+        accessToken:
+          type: string
+        refreshToken:
+          type: string
+
+    Profile:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        displayName:
+          type: string
+        age:
+          type: integer
+        bio:
+          type: string
+        interests:
+          type: array
+          items:
+            type: string
+        location:
+          type: string
+          nullable: true
+
+    ProfileUpdate:
+      allOf:
+        - $ref: "#/components/schemas/Profile"
+
+    ProfileCard:
+      type: object
+      properties:
+        userId:
+          type: string
+          format: uuid
+        displayName:
+          type: string
+        age:
+          type: integer
+        photos:
+          type: array
+          items:
+            type: string
+        bio:
+          type: string
+
+    Match:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        userId:
+          type: string
+          format: uuid
+        partnerId:
+          type: string
+          format: uuid
+        createdAt:
+          type: string
+          format: date-time
+
+    Message:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        senderId:
+          type: string
+          format: uuid
+        content:
+          type: string
+          minLength: 1
+          maxLength: 5000
+        sentAt:
+          type: string
+          format: date-time
