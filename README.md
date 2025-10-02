@@ -4,14 +4,23 @@
 
 ## Стек технологий
 **Язык программирования:** Python/Go
+
 **API:** REST
+
 **База данных:** PostgreSQL
+
 **Документация API:** OpenAPI (Swagger)
+
 **Кэширование:** Redis
+
 **Контейнеризация:** Docker
+
 **Хостинг:** Railway/Heroku
+
 **Тестирование:** Pytest/go test
+
 **Наблюдаемость:** Prometheus, Grafana, Loki.
+
 **Безопасность:** JWT/OAuth2, rate‑limits, Trivy, Snyk.
 
 ## Архитектура модулей
