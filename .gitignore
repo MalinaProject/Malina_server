@@ -1,29 +1,11 @@
-# === Go build artifacts ===
-*.exe
-*.exe~
-*.dll
-*.so
-*.dylib
-*.test
-*.out
-
-
 # Binaries & build dirs
 /bin/
 /build/
 /dist/
 /out/
 /tmp/
-
-
-# Go modules & tooling
-vendor/
-coverage.out
-*.coverprofile
-*.cov
-*.prof
-*.pprof
-
+node_modules/
+coverage/
 
 # Logs
 *.log
