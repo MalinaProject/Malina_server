@@ -1,0 +1,4 @@
+package project.malina;
+
+public class JwtAuthenticationResponse {
+}
