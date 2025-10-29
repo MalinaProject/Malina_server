@@ -54,3 +54,7 @@
 ## API
 
 Находится в файле [api-spec.yaml](api-spec.yaml)
+
+## SWAGGER
+
+Для получения доступа к схеме SWAGGER нужно перейти по http://localhost:8080/swagger-ui/index.html#/ 
