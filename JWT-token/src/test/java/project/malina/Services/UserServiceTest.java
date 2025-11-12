@@ -72,11 +72,11 @@ class UserServiceTest {
 
     @ParameterizedTest
     @CsvSource({
-            "duplicate@example.com, uniqueUser",
-            "duplicate@example.com, anotherUser"
+        "duplicate@example.com, uniqueUser",
+        "duplicate@example.com, anotherUser"
     })
     @DisplayName("Создание пользователя с существующим email выбрасывает исключение")
-    void createUserWhenEmailExists(String email, String username) {
+    void createUserWhenEmailExists(final String email, final String username) {
         User user = User.builder()
                 .username(username)
                 .email(email)

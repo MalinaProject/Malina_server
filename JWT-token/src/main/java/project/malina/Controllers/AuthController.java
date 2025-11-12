@@ -20,20 +20,20 @@ import project.malina.SignUpRequest;
 @RequiredArgsConstructor
 @Tag(name = "Аутентификация")
 public class AuthController {
-    private static final Logger log = LogManager.getLogger(AuthController.class);
+    private static final Logger LOG = LogManager.getLogger(AuthController.class);
     private final AuthenticationService authenticationService;
 
     @Operation(summary = "Регистрация пользователя")
     @PostMapping("/sign-up")
-    public JwtAuthenticationResponse signUp(@RequestBody @Valid SignUpRequest request) {
-        log.info("Запрос регистрации для пользователя '{}'", request.getUsername());
+    public JwtAuthenticationResponse signUp(@RequestBody @Valid final SignUpRequest request) {
+        LOG.info("Запрос регистрации для пользователя '{}'", request.getUsername());
         return authenticationService.signUp(request);
     }
 
     @Operation(summary = "Авторизация пользователя")
     @PostMapping("/sign-in")
-    public JwtAuthenticationResponse signIn(@RequestBody @Valid SignInRequest request) {
-        log.info("Запрос авторизации для пользователя '{}'", request.getUsername());
+    public JwtAuthenticationResponse signIn(@RequestBody @Valid final SignInRequest request) {
+        LOG.info("Запрос авторизации для пользователя '{}'", request.getUsername());
         return authenticationService.signIn(request);
     }
 }

@@ -16,13 +16,13 @@ import project.malina.Services.UserService;
 @RequiredArgsConstructor
 @Tag(name = "Аутентификация")
 public class ExampleController {
-    private static final Logger log = LogManager.getLogger(ExampleController.class);
+    private static final Logger LOG = LogManager.getLogger(ExampleController.class);
     private final UserService service;
 
     @GetMapping
     @Operation(summary = "Доступен только авторизованным пользователям")
     public String example() {
-        log.debug("Выполнен запрос к открытому примеру");
+        LOG.debug("Выполнен запрос к открытому примеру");
         return "Hello, world!";
     }
 
@@ -30,14 +30,14 @@ public class ExampleController {
     @Operation(summary = "Доступен только авторизованным пользователям с ролью ADMIN")
     @PreAuthorize("hasRole('ADMIN')")
     public String exampleAdmin() {
-        log.info("Запрос к ресурсу администратора");
+        LOG.info("Запрос к ресурсу администратора");
         return "Hello, admin!";
     }
 
     @GetMapping("/get-admin")
     @Operation(summary = "Получить роль ADMIN (для демонстрации)")
     public void getAdmin() {
-        log.warn("Назначение роли ADMIN текущему пользователю");
+        LOG.warn("Назначение роли ADMIN текущему пользователю");
         service.getAdmin();
     }
 }
