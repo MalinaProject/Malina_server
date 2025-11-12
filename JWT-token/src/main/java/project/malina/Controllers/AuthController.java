@@ -4,6 +4,8 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -18,17 +20,20 @@ import project.malina.SignUpRequest;
 @RequiredArgsConstructor
 @Tag(name = "Аутентификация")
 public class AuthController {
+    private static final Logger log = LogManager.getLogger(AuthController.class);
     private final AuthenticationService authenticationService;
 
     @Operation(summary = "Регистрация пользователя")
     @PostMapping("/sign-up")
     public JwtAuthenticationResponse signUp(@RequestBody @Valid SignUpRequest request) {
+        log.info("Запрос регистрации для пользователя '{}'", request.getUsername());
         return authenticationService.signUp(request);
     }
 
     @Operation(summary = "Авторизация пользователя")
     @PostMapping("/sign-in")
     public JwtAuthenticationResponse signIn(@RequestBody @Valid SignInRequest request) {
+        log.info("Запрос авторизации для пользователя '{}'", request.getUsername());
         return authenticationService.signIn(request);
     }
 }

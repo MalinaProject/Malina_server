@@ -1,8 +1,11 @@
 package project.malina.Services;
 
 import lombok.RequiredArgsConstructor;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import project.malina.JwtAuthenticationResponse;
@@ -14,6 +17,7 @@ import project.malina.SignUpRequest;
 @Service
 @RequiredArgsConstructor
 public class AuthenticationService {
+    private static final Logger log = LogManager.getLogger(AuthenticationService.class);
     private final UserService userService;
     private final JwtService jwtService;
     private final PasswordEncoder passwordEncoder;
@@ -27,6 +31,7 @@ public class AuthenticationService {
      */
     public JwtAuthenticationResponse signUp(SignUpRequest request) {
 
+        log.info("Регистрация нового пользователя '{}'", request.getUsername());
         var user = User.builder()
                 .username(request.getUsername())
                 .email(request.getEmail())
@@ -35,8 +40,10 @@ public class AuthenticationService {
                 .build();
 
         userService.create(user);
+        log.debug("Пользователь '{}' успешно сохранен", request.getUsername());
 
         var jwt = jwtService.generateToken(user);
+        log.trace("Сформирован JWT для пользователя '{}'", request.getUsername());
         return new JwtAuthenticationResponse(jwt);
     }
 
@@ -47,16 +54,24 @@ public class AuthenticationService {
      * @return токен
      */
     public JwtAuthenticationResponse signIn(SignInRequest request) {
-        authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(
-                request.getUsername(),
-                request.getPassword()
-        ));
+        log.info("Попытка аутентификации пользователя '{}'", request.getUsername());
+        try {
+            authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(
+                    request.getUsername(),
+                    request.getPassword()
+            ));
+            log.debug("Аутентификация пользователя '{}' прошла успешно", request.getUsername());
+        } catch (AuthenticationException ex) {
+            log.error("Ошибка аутентификации пользователя '{}'", request.getUsername(), ex);
+            throw ex;
+        }
 
         var user = userService
                 .userDetailsService()
                 .loadUserByUsername(request.getUsername());
 
         var jwt = jwtService.generateToken(user);
+        log.trace("Сформирован JWT для пользователя '{}'", request.getUsername());
         return new JwtAuthenticationResponse(jwt);
     }
 }

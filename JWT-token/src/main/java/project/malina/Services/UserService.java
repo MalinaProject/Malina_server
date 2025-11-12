@@ -1,6 +1,11 @@
 package project.malina.Services;
 
 import lombok.RequiredArgsConstructor;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import org.springframework.dao.DataAccessException;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -8,12 +13,11 @@ import org.springframework.stereotype.Service;
 import project.malina.Repository.UserRepository;
 import project.malina.Security.Role;
 import project.malina.Security.User;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 @Service
 @RequiredArgsConstructor
 public class UserService {
+    private static final Logger log = LogManager.getLogger(UserService.class);
     private final UserRepository repository;
 
     /**
@@ -22,10 +26,9 @@ public class UserService {
      * @return сохраненный пользователь
      */
     public User save(User user) {
+        log.debug("Сохранение пользователя с именем '{}'", user.getUsername());
         return repository.save(user);
     }
-
-    private static final Logger log = LoggerFactory.getLogger(UserService.class);
     /**
      * Создание пользователя
      *
@@ -33,21 +36,28 @@ public class UserService {
      */
     public User create(User user) {
 
-        log.info("Проверка email: '{}'", user.getEmail());
+        log.trace("Начато создание пользователя '{}'", user.getUsername());
+
         if (repository.existsByEmail(user.getEmail())) {
-            log.info("Дубликат найден для email: '{}'", user.getEmail());
+            log.warn("Попытка создать пользователя с уже существующим email '{}'", user.getEmail());
             throw new RuntimeException("Пользователь с таким email уже существует");
         }
         if (repository.existsByUsername(user.getUsername())) {
-            // Заменить на свои исключения
+            log.warn("Попытка создать пользователя с уже существующим именем '{}'", user.getUsername());
             throw new RuntimeException("Пользователь с таким именем уже существует");
         }
 
-        if (repository.existsByEmail(user.getEmail())) {
-            throw new RuntimeException("Пользователь с таким email уже существует");
+        try {
+            User saved = save(user);
+            log.info("Пользователь '{}' успешно создан", user.getUsername());
+            return saved;
+        } catch (DataAccessException e) {
+            log.error("Ошибка доступа к данным при создании пользователя '{}'", user.getUsername(), e);
+            throw e;
+        } catch (RuntimeException e) {
+            log.fatal("Фатальная ошибка при создании пользователя '{}'", user.getUsername(), e);
+            throw e;
         }
-
-        return save(user);
     }
 
     /**
@@ -56,8 +66,12 @@ public class UserService {
      * @return пользователь
      */
     public User getByUsername(String username) {
+        log.debug("Поиск пользователя по имени '{}'", username);
         return repository.findByUsername(username)
-                .orElseThrow(() -> new UsernameNotFoundException("Пользователь не найден"));
+                .orElseThrow(() -> {
+                    log.error("Пользователь '{}' не найден", username);
+                    return new UsernameNotFoundException("Пользователь не найден");
+                });
 
     }
 
@@ -78,8 +92,16 @@ public class UserService {
      * @return текущий пользователь
      */
     public User getCurrentUser() {
-        // Получение имени пользователя из контекста Spring Security
-        var username = SecurityContextHolder.getContext().getAuthentication().getName();
+        SecurityContext context = SecurityContextHolder.getContext();
+        Authentication authentication = context != null ? context.getAuthentication() : null;
+
+        if (authentication == null || !authentication.isAuthenticated()) {
+            log.fatal("Попытка получения текущего пользователя без аутентификации");
+            throw new IllegalStateException("Текущий пользователь не аутентифицирован");
+        }
+
+        var username = authentication.getName();
+        log.info("Получение текущего пользователя '{}'", username);
         return getByUsername(username);
     }
 
@@ -92,6 +114,7 @@ public class UserService {
     @Deprecated
     public void getAdmin() {
         var user = getCurrentUser();
+        log.warn("Назначение роли ADMIN пользователю '{}'", user.getUsername());
         user.setRole(Role.ROLE_ADMIN);
         save(user);
     }

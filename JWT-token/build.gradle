@@ -1,7 +1,8 @@
 plugins {
-	id 'java'
-	id 'org.springframework.boot' version '3.5.7'
-	id 'io.spring.dependency-management' version '1.1.7'
+        id 'java'
+        id 'org.springframework.boot' version '3.5.7'
+        id 'io.spring.dependency-management' version '1.1.7'
+        id 'org.sonarqube' version '5.1.0.4882'
 }
 
 group = 'project'
@@ -15,9 +16,12 @@ java {
 }
 
 configurations {
-	compileOnly {
-		extendsFrom annotationProcessor
-	}
+        compileOnly {
+                extendsFrom annotationProcessor
+        }
+        all {
+                exclude group: 'org.springframework.boot', module: 'spring-boot-starter-logging'
+        }
 }
 
 repositories {
@@ -25,17 +29,20 @@ repositories {
 }
 
 dependencies {
-	implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
-	implementation 'org.springframework.boot:spring-boot-starter-security'
-	implementation 'org.springframework.boot:spring-boot-starter-thymeleaf'
-	implementation 'org.springframework.boot:spring-boot-starter-web'
-	implementation 'org.thymeleaf.extras:thymeleaf-extras-springsecurity6'
-	compileOnly 'org.projectlombok:lombok'
-	runtimeOnly 'org.postgresql:postgresql:42.6.0'
-	annotationProcessor 'org.projectlombok:lombok'
-	testImplementation 'org.springframework.boot:spring-boot-starter-test'
-	testImplementation 'org.springframework.security:spring-security-test'
-	testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+        implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
+        implementation 'org.springframework.boot:spring-boot-starter-security'
+        implementation 'org.springframework.boot:spring-boot-starter-thymeleaf'
+        implementation 'org.springframework.boot:spring-boot-starter-web'
+        implementation 'org.thymeleaf.extras:thymeleaf-extras-springsecurity6'
+        implementation 'org.springframework.boot:spring-boot-starter-aop'
+        implementation 'org.springframework.boot:spring-boot-starter-log4j2'
+        compileOnly 'org.projectlombok:lombok'
+        runtimeOnly 'org.postgresql:postgresql:42.6.0'
+        annotationProcessor 'org.projectlombok:lombok'
+        testImplementation 'org.springframework.boot:spring-boot-starter-test'
+        testImplementation 'org.springframework.security:spring-security-test'
+        testImplementation 'com.h2database:h2'
+        testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
     implementation 'org.springframework.boot:spring-boot-starter-validation'
     implementation 'io.jsonwebtoken:jjwt-api:0.12.3'
     runtimeOnly 'io.jsonwebtoken:jjwt-impl:0.12.3'
@@ -44,5 +51,13 @@ dependencies {
 }
 
 tasks.named('test') {
-	useJUnitPlatform()
+        useJUnitPlatform()
+}
+
+sonarqube {
+        properties {
+                property "sonar.projectKey", "malina-server"
+                property "sonar.projectName", "Malina Server"
+                property "sonar.sourceEncoding", "UTF-8"
+        }
 }

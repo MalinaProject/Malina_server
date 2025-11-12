@@ -1,24 +1,26 @@
 package project.malina.Services;
 
-import io.jsonwebtoken.io.Decoders;
-import io.jsonwebtoken.security.Keys;
-
-import java.security.Key;
-import java.util.Date;
-import java.util.function.Function;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
+import io.jsonwebtoken.io.Decoders;
+import io.jsonwebtoken.security.Keys;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 import project.malina.Security.User;
 
+import java.security.Key;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.function.Function;
 
 @Service
 public class JwtService {
+    private static final Logger log = LogManager.getLogger(JwtService.class);
     @Value("${token.signing.key}")
     private String jwtSigningKey;
 
@@ -29,6 +31,7 @@ public class JwtService {
      * @return имя пользователя
      */
     public String extractUserName(String token) {
+        log.trace("Извлечение имени пользователя из JWT");
         return extractClaim(token, Claims::getSubject);
     }
 
@@ -39,6 +42,7 @@ public class JwtService {
      * @return токен
      */
     public String generateToken(UserDetails userDetails) {
+        log.debug("Генерация JWT для пользователя '{}'", userDetails.getUsername());
         Map<String, Object> claims = new HashMap<>();
         if (userDetails instanceof User customUserDetails) {
             claims.put("id", customUserDetails.getId());
@@ -57,6 +61,7 @@ public class JwtService {
      */
     public boolean isTokenValid(String token, UserDetails userDetails) {
         final String userName = extractUserName(token);
+        log.trace("Проверка валидности токена для пользователя '{}'", userDetails.getUsername());
         return (userName.equals(userDetails.getUsername())) && !isTokenExpired(token);
     }
 
@@ -69,6 +74,7 @@ public class JwtService {
      * @return данные
      */
     private <T> T extractClaim(String token, Function<Claims, T> claimsResolvers) {
+        log.trace("Извлечение claims из токена");
         final Claims claims = extractAllClaims(token);
         return claimsResolvers.apply(claims);
     }
@@ -81,6 +87,7 @@ public class JwtService {
      * @return токен
      */
     private String generateToken(Map<String, Object> extraClaims, UserDetails userDetails) {
+        log.trace("Создание токена с дополнительными claims для пользователя '{}'", userDetails.getUsername());
         return Jwts.builder().setClaims(extraClaims).setSubject(userDetails.getUsername())
                 .setIssuedAt(new Date(System.currentTimeMillis()))
                 .setExpiration(new Date(System.currentTimeMillis() + 100000 * 60 * 24))
@@ -94,6 +101,7 @@ public class JwtService {
      * @return true, если токен просрочен
      */
     private boolean isTokenExpired(String token) {
+        log.trace("Проверка срока действия токена");
         return extractExpiration(token).before(new Date());
     }
 
@@ -114,6 +122,7 @@ public class JwtService {
      * @return данные
      */
     private Claims extractAllClaims(String token) {
+        log.trace("Парсинг JWT для извлечения claims");
         return Jwts.parser().setSigningKey(getSigningKey()).build().parseClaimsJws(token)
                 .getBody();
     }
@@ -124,6 +133,7 @@ public class JwtService {
      * @return ключ
      */
     private Key getSigningKey() {
+        log.trace("Получение ключа подписи JWT");
         byte[] keyBytes = Decoders.BASE64.decode(jwtSigningKey);
         return Keys.hmacShaKeyFor(keyBytes);
     }
